@@ -9,11 +9,8 @@ architectures. In this Thesis, we use an LSTM Neural Network to test the
 Efficient Market Hypothesis introduced by Eugene Fama by attempting
 to forecast the movement of the Greek Index Future FTSE/ATHEX Large
 Cap. Additionally, we compare the performance of our LSTM model
-performance with a Multilayered Perceptron with a time window and a
-traditional ARMA model using as variables autoregressive terms of our
-dataset. The results showed that both Artificial Intelligence methods
-outperform the classic econometric (ARMA) model on prediction accuracy and trading
-performance. We conclude that the performed accuracy is impressive
+performance with a Multilayered Perceptron with a time window using as variables autoregressive terms of our
+dataset. We conclude that the performed accuracy is impressive
 nevertheless it might be attributed to the good fitting of the model in the
 out of sample data and lack of exposure to LSTM of the particular
 market. Finally, we suggest ideas for further research.
