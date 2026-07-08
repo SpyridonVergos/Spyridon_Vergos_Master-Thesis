@@ -20,4 +20,32 @@ Neural Networks.
 
 
 
-#### Click on ThesisIPYTHON folder and run ATHEXNEURALNETS notebook.
+## How to run
+
+Requires Python 3.9–3.11 (TensorFlow 2.15 does not support newer versions).
+
+```bash
+pip install -r ThesisIPYTHON/requirements.txt
+jupyter notebook ThesisIPYTHON/ATHEXNEURALNETS.ipynb
+```
+
+Then run all cells. The notebook loads the pre-trained models from
+`ThesisIPYTHON/MODELS/` — no training is needed.
+
+**Why TensorFlow is pinned to 2.15:** the pre-trained models
+(`MLP2.h5`, `LSTM.h5`) were saved with Keras 2.0.9/2.1.5 and cannot be
+loaded by Keras 3 (bundled with TensorFlow 2.16+). TensorFlow 2.15 is the
+last release that ships Keras 2.
+
+**Using the models on modern Keras 3:** the weights are also exported in
+plain NumPy format (`MODELS/*_weights.npz`) together with
+`MODELS/rebuild_models.py`, which rebuilds the architectures in code and
+reproduces the original models' predictions on both Keras 2 and Keras 3
+(it preserves the original Keras 2 `hard_sigmoid` definition, which
+Keras 3 changed):
+
+```python
+from MODELS.rebuild_models import load_mlp, load_lstm
+mlp = load_mlp()
+lstm = load_lstm()
+```
