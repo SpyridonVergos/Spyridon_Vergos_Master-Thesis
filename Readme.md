@@ -49,3 +49,22 @@ from MODELS.rebuild_models import load_mlp, load_lstm
 mlp = load_mlp()
 lstm = load_lstm()
 ```
+
+## Retraining the models
+
+`ThesisIPYTHON/train_models.py` reproduces the training that created the
+pre-trained models, using the notebook's exact data pipeline and the
+training configuration recorded inside the original h5 files (Adam,
+learning rate 0.001, MSE loss; batch size 1 and 200 epochs for the
+stateful LSTM). Run it inside the pinned environment:
+
+```bash
+cd ThesisIPYTHON
+python train_models.py                 # full training (~1-2 h on CPU)
+python train_models.py --lstm-epochs 5 --mlp-epochs 20   # quick check
+```
+
+Retrained models are saved as `MODELS/*_retrained.h5` so the original
+thesis artifacts are never overwritten. Because the original random
+seeds were not recorded, retrained weights differ from the originals
+but reach comparable MAE/RMSE scores.
