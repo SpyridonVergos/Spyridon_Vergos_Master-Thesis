@@ -16,6 +16,10 @@ see requirements.txt). Since the original random seeds and exact epoch
 counts for the MLP were not recorded, retrained weights will not be
 bit-identical to the originals, but reach comparable error scores.
 
+By default the scaler is fit on the training slice only, which corrects
+a data leak present in the original pipeline (see load_data). Use
+--scaler-fit full to reproduce the thesis pipeline exactly.
+
 Retrained models are written next to the originals with a `_retrained`
 suffix so the thesis artifacts are never overwritten:
 
@@ -48,19 +52,26 @@ def create_dataset(dataset, look_back=1):
     return numpy.array(dataX), numpy.array(dataY)
 
 
-def load_data():
-    """Load and scale the returns series exactly as the notebook does.
+def load_data(scaler_fit='train'):
+    """Load and scale the returns series.
 
-    Note: as in the original notebook, the scaler is fit on the full
-    series before the train/test split (kept for faithfulness to the
-    thesis; fit on the training slice only to avoid the leakage).
+    scaler_fit='train' fits the MinMaxScaler on the training slice only
+    (methodologically correct: the test set stays unseen). The original
+    thesis pipeline fit the scaler on the full series, which leaks the
+    test period's extremes into training-time scaling — notably the
+    series minimum (-0.1637, June 2015) lies in the test period. Pass
+    scaler_fit='full' to reproduce that original behaviour.
     """
     dataframe = read_csv(os.path.join(_HERE, 'DATASETS/2001-2017-ATHEX-RETURNS.csv'),
                          usecols=[1], engine='python', skipfooter=3)
     dataset = dataframe.values.astype('float32')
-    scaler = MinMaxScaler(feature_range=(-1, 1))
-    dataset = scaler.fit_transform(dataset)
     train_size = int(len(dataset) * 0.67)
+    scaler = MinMaxScaler(feature_range=(-1, 1))
+    if scaler_fit == 'train':
+        scaler.fit(dataset[0:train_size, :])
+    else:
+        scaler.fit(dataset)
+    dataset = scaler.transform(dataset)
     return dataset[0:train_size, :], dataset[train_size:, :], scaler
 
 
@@ -132,10 +143,14 @@ def main():
     parser.add_argument('--lstm-epochs', type=int, default=200)
     parser.add_argument('--seed', type=int, default=7)
     parser.add_argument('--output-dir', default=os.path.join(_HERE, 'MODELS'))
+    parser.add_argument('--scaler-fit', choices=['train', 'full'], default='train',
+                        help="'train' fits the scaler on the training slice only "
+                             "(no test-set leakage, default); 'full' reproduces "
+                             "the original thesis pipeline")
     args = parser.parse_args()
 
     numpy.random.seed(args.seed)
-    train, test, scaler = load_data()
+    train, test, scaler = load_data(args.scaler_fit)
 
     mlp = train_mlp(train, test, scaler, args.mlp_epochs, args.mlp_batch_size)
     mlp.save(os.path.join(args.output_dir, 'MLP2_retrained.h5'))

@@ -68,3 +68,9 @@ Retrained models are saved as `MODELS/*_retrained.h5` so the original
 thesis artifacts are never overwritten. Because the original random
 seeds were not recorded, retrained weights differ from the originals
 but reach comparable MAE/RMSE scores.
+
+Unlike the original pipeline, `train_models.py` fits the scaler on the
+training slice only by default, avoiding a test-set leak present in the
+thesis (the series' extreme minimum lies in the test period and
+influenced the original scaling). Use `--scaler-fit full` to reproduce
+the thesis pipeline exactly.
