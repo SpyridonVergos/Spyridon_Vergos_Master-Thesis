@@ -1,5 +1,7 @@
 [![Notebook CI](https://github.com/SpyridonVergos/Spyridon_Vergos_Master-Thesis/actions/workflows/notebook-ci.yml/badge.svg)](https://github.com/SpyridonVergos/Spyridon_Vergos_Master-Thesis/actions/workflows/notebook-ci.yml)
 
+**Website:** https://spyridonvergos.github.io/Spyridon_Vergos_Master-Thesis/
+
 #                            Abstract
 The fields of big data analysis and deep learning are developing fast
 recently mainly due to the vast availability of data sets online and the
