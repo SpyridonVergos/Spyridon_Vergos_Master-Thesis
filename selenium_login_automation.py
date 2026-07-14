@@ -1,8 +1,12 @@
 """
-Robust Selenium login + interaction automation — a reference implementation.
+Robust login + interaction automation with undetected_chromedriver — a
+reference implementation.
 
-Demonstrates the automation techniques a bot's "session" layer needs, done the
-maintainable way:
+Same maintainable automation techniques as a plain-Selenium build, but the
+WebDriver is created through `undetected_chromedriver`, which ships a patched
+ChromeDriver and Chrome launch profile. The rest of the file is deliberately
+unchanged: undetected_chromedriver subclasses selenium's WebDriver, so every
+`By`, `WebDriverWait`, and `expected_conditions` call works exactly as before.
 
   1. Anchor selectors on meaning (id / name / ARIA / text), not DOM position.
   2. One centralized explicit-wait model — never bare time.sleep() as a wait.
@@ -12,17 +16,18 @@ maintainable way:
      instead of sleeping and hoping.
 
 Target: https://the-internet.herokuapp.com/login — a sandbox published expressly
-for practicing Selenium against login forms, dynamic content, and flaky UI. It
-hands out its own test credentials (tomsmith / SuperSecretPassword!), so this
-file is a clean, runnable teaching artifact with no third party involved.
+for practicing browser automation against login forms, dynamic content, and
+flaky UI. It hands out its own test credentials (tomsmith / SuperSecretPassword!),
+so this file is a clean, runnable teaching artifact with no third party involved.
+
+Install: pip install undetected-chromedriver selenium
 """
 
 import logging
 import os
 import sys
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -138,21 +143,30 @@ class SecureAreaPage(Page):
 
 
 def build_driver(headless=True):
-    opts = Options()
-    if headless:
-        opts.add_argument("--headless=new")
+    """Create an undetected_chromedriver instance.
+
+    undetected_chromedriver manages (downloads + patches) a matching
+    ChromeDriver on its own by default. Sandboxed CI images that ship their own
+    browser/driver pair and block downloads can point at them via env vars:
+      CHROME_BIN            -> browser_executable_path
+      CHROMEDRIVER          -> driver_executable_path (uc patches a copy)
+      CHROME_VERSION_MAIN   -> version_main (major version, e.g. "141")
+    """
+    opts = uc.ChromeOptions()
     opts.add_argument("--no-sandbox")
     opts.add_argument("--disable-dev-shm-usage")
-    # Sandboxed CI images often ship their own browser/driver pair and block
-    # downloads; honor overrides there. Otherwise Selenium Manager (built in
-    # since 4.6) fetches the matching driver itself.
     if os.environ.get("CHROME_BIN"):
         opts.binary_location = os.environ["CHROME_BIN"]
-    service = None
+
+    kwargs = {"options": opts, "headless": headless}
+    if os.environ.get("CHROME_BIN"):
+        kwargs["browser_executable_path"] = os.environ["CHROME_BIN"]
     if os.environ.get("CHROMEDRIVER"):
-        from selenium.webdriver.chrome.service import Service
-        service = Service(executable_path=os.environ["CHROMEDRIVER"])
-    return webdriver.Chrome(options=opts, service=service)
+        kwargs["driver_executable_path"] = os.environ["CHROMEDRIVER"]
+    if os.environ.get("CHROME_VERSION_MAIN"):
+        kwargs["version_main"] = int(os.environ["CHROME_VERSION_MAIN"])
+
+    return uc.Chrome(**kwargs)
 
 
 def main():
