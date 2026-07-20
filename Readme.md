@@ -54,6 +54,15 @@ mlp = load_mlp()
 lstm = load_lstm()
 ```
 
+## Excel templates
+
+`ThesisIPYTHON/TEMPLATES/` contains Excel templates (`.xltx`) supporting the
+workflow: a dataset-entry template matching the layout of
+`DATASETS/2001-2017-ATHEX-RETURNS.csv` (with auto-computed descriptive
+statistics), and an experiment-log template for recording MAE/RMSE scores of
+training runs with an auto-computed model comparison. See
+[`ThesisIPYTHON/TEMPLATES/README.md`](ThesisIPYTHON/TEMPLATES/README.md).
+
 ## Retraining the models
 
 `ThesisIPYTHON/train_models.py` reproduces the training that created the
